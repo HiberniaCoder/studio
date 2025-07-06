@@ -4,11 +4,55 @@ import { z } from 'zod';
 import { supabase } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
 
+/*
+* In your Supabase project, you'll need to create the following tables:
+*
+* CREATE TABLE clients (
+*   id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+*   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+*   business_name text,
+*   business_type text,
+*   website text,
+*   industry text,
+*   created_at timestamp with time zone DEFAULT now() NOT NULL
+* );
+*
+* CREATE TABLE industries (
+*  id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+*  name text NOT NULL UNIQUE,
+*  created_at timestamp with time zone DEFAULT now() NOT NULL
+* );
+*
+* CREATE TABLE business_types (
+*  id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+*  name text NOT NULL UNIQUE,
+*  created_at timestamp with time zone DEFAULT now() NOT NULL
+* );
+*
+* And enable Row Level Security (RLS) and create policies.
+*
+* -- Policies for clients table
+* CREATE POLICY "Enable read access for own user" ON public.clients FOR SELECT USING (auth.uid() = user_id);
+* CREATE POLICY "Enable insert for authenticated users" ON public.clients FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+*
+* -- Policies for industries table
+* CREATE POLICY "Enable read access for all users" ON public.industries FOR SELECT USING (true);
+*
+* -- Policies for business_types table
+* CREATE POLICY "Enable read access for all users" ON public.business_types FOR SELECT USING (true);
+*
+* You can also insert some initial data:
+*
+* INSERT INTO industries (name) VALUES ('Technology'), ('Marketing'), ('Retail'), ('Healthcare'), ('Finance'), ('E-commerce');
+* INSERT INTO business_types (name) VALUES ('SaaS'), ('Agency'), ('B2B'), ('B2C'), ('Marketplace');
+*
+*/
+
 const formSchema = z.object({
   businessName: z.string().min(2, "Business name must be at least 2 characters."),
-  businessType: z.string().min(2, "Please enter a valid business type."),
+  industry: z.string().min(1, "Please select an industry."),
+  businessType: z.string().min(1, "Please select a business type."),
   website: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
-  industry: z.string().min(2, "Please enter your industry."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -24,26 +68,6 @@ export async function saveBusinessDetails(values: FormValues) {
     return { error: 'You must be logged in to complete onboarding.' };
   }
 
-  /*
-    * In your Supabase project, you'll need to create a 'clients' table with the following schema:
-    *
-    * CREATE TABLE clients (
-    *   id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
-    *   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
-    *   business_name text,
-    *   business_type text,
-    *   website text,
-    *   industry text,
-    *   created_at timestamp with time zone DEFAULT now() NOT NULL
-    * );
-    *
-    * After creating the table, enable Row Level Security (RLS) and create policies.
-    * Example policies:
-    * - Enable read access for users based on their user_id:
-    *   CREATE POLICY "Enable read access for own user" ON public.clients FOR SELECT USING (auth.uid() = user_id);
-    * - Enable insert for authenticated users:
-    *   CREATE POLICY "Enable insert for authenticated users" ON public.clients FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-  */
   const { error } = await supabase.from('clients').insert({
     user_id: user.id,
     business_name: values.businessName,
@@ -61,4 +85,28 @@ export async function saveBusinessDetails(values: FormValues) {
   }
 
   redirect('/dashboard');
+}
+
+export type SelectOption = {
+    name: string;
+};
+
+export async function getIndustries(): Promise<SelectOption[]> {
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('industries').select('name').order('name');
+    if (error) {
+        console.error('Error fetching industries:', error);
+        return [];
+    }
+    return data;
+}
+
+export async function getBusinessTypes(): Promise<SelectOption[]> {
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('business_types').select('name').order('name');
+    if (error) {
+        console.error('Error fetching business types:', error);
+        return [];
+    }
+    return data;
 }

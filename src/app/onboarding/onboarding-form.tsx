@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,22 +12,34 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { saveBusinessDetails } from "./actions";
+import { saveBusinessDetails, type SelectOption } from "./actions";
 
 const formSchema = z.object({
   businessName: z.string().min(2, "Business name must be at least 2 characters."),
-  businessType: z.string().min(2, "Please enter a valid business type."),
+  industry: z.string().min(1, "Please select an industry."),
+  businessType: z.string().min(1, "Please select a business type."),
   website: z.string().url("Please enter a valid URL (e.g., https://example.com)").optional().or(z.literal('')),
-  industry: z.string().min(2, "Please enter your industry."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function OnboardingForm() {
+type OnboardingFormProps = {
+  industries: SelectOption[];
+  businessTypes: SelectOption[];
+};
+
+export default function OnboardingForm({ industries, businessTypes }: OnboardingFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -79,9 +90,20 @@ export default function OnboardingForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Industry</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Technology, Marketing, Retail" {...field} />
-              </FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an industry" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {industries.map((industry) => (
+                      <SelectItem key={industry.name} value={industry.name}>
+                        {industry.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -92,9 +114,20 @@ export default function OnboardingForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Business Type</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., SaaS, E-commerce, Agency" {...field} />
-              </FormControl>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a business type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {businessTypes.map((type) => (
+                      <SelectItem key={type.name} value={type.name}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               <FormMessage />
             </FormItem>
           )}
