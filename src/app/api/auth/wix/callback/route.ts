@@ -20,11 +20,10 @@ export async function GET(request: NextRequest) {
   }
 
   const wixClientId = process.env.WIX_CLIENT_ID;
-  const wixClientSecret = process.env.WIX_CLIENT_SECRET;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-  if (!wixClientId || !wixClientSecret || !appUrl) {
-    console.error('Wix environment variables WIX_CLIENT_ID, WIX_CLIENT_SECRET, or NEXT_PUBLIC_APP_URL are not fully set.');
+  if (!wixClientId || !appUrl) {
+    console.error('Wix environment variables WIX_CLIENT_ID or NEXT_PUBLIC_APP_URL are not fully set.');
     connectionsUrl.searchParams.set('error', 'wix_config_error');
     connectionsUrl.searchParams.set('error_description', 'Wix integration is not configured correctly.');
     return NextResponse.redirect(connectionsUrl);
@@ -35,7 +34,6 @@ export async function GET(request: NextRequest) {
     const tokenResponse = await axios.post('https://www.wix.com/oauth/token', {
       grant_type: 'authorization_code',
       client_id: wixClientId,
-      client_secret: wixClientSecret,
       code: code,
     });
 
