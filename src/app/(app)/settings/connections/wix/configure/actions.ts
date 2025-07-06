@@ -32,6 +32,18 @@ import { revalidatePath } from "next/cache";
 * );
 * 
 * Don't forget to enable RLS and create policies for both tables.
+*
+* -- RLS Policies for wix_settings
+* CREATE POLICY "Enable all actions for own user"
+* ON public.wix_settings
+* FOR ALL
+* USING (auth.uid() = user_id);
+*
+* -- RLS Policies for wix_analytics_data
+* CREATE POLICY "Enable all actions for own user"
+* ON public.wix_analytics_data
+* FOR ALL
+* USING (auth.uid() = user_id);
 */
 
 const formSchema = z.object({
