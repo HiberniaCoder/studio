@@ -50,6 +50,17 @@ export default function RegisterForm() {
 
   async function onSubmit(values: FormValues) {
     setLoading(true);
+
+    if (!supabase) {
+        toast({
+            variant: "destructive",
+            title: "Configuration Error",
+            description: "This application is not configured for authentication. Please check the setup.",
+        });
+        setLoading(false);
+        return;
+    }
+
     const { error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,

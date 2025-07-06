@@ -3,8 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables. Please check your .env file.");
-}
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (!supabase) {
+  // This warning will be logged on the server during SSR and on the client.
+  // It avoids crashing the application if env variables are not set.
+  console.warn("Supabase environment variables not set. Features using Supabase will be disabled. Please check your .env file.");
+}

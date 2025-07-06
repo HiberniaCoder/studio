@@ -14,6 +14,10 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export async function saveBusinessDetails(values: FormValues) {
+  if (!supabase) {
+    return { error: 'Database connection is not configured. Please check server environment variables.' };
+  }
+
   const { data: { user }, error: userError } = await supabase.auth.getUser();
 
   if (userError || !user) {
