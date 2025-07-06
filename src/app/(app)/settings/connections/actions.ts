@@ -32,7 +32,7 @@ export async function getWixAuthUrl(): Promise<{ authUrl?: string; error?: strin
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
     if (!wixClientId || !appUrl) {
-        console.error("Wix environment variables are not set.");
+        console.error("Wix environment variables WIX_CLIENT_ID or NEXT_PUBLIC_APP_URL are not set.");
         return { error: 'Wix application details are not configured. Please contact support.' };
     }
 

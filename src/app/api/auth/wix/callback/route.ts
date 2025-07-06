@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
   if (!wixClientId || !wixClientSecret || !appUrl) {
-    console.error('Wix environment variables are not fully set.');
+    console.error('Wix environment variables WIX_CLIENT_ID, WIX_CLIENT_SECRET, or NEXT_PUBLIC_APP_URL are not fully set.');
     connectionsUrl.searchParams.set('error', 'wix_config_error');
     connectionsUrl.searchParams.set('error_description', 'Wix integration is not configured correctly.');
     return NextResponse.redirect(connectionsUrl);
