@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DatabaseZap, Sheet, Briefcase, BarChart, ShoppingCart, Code, Loader2 } from 'lucide-react';
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { getWixAuthUrl } from "./actions";
+import { getWixAuthUrl } from "../settings/connections/actions";
 
 const staticConnectors = [
     { name: 'Google Sheets', icon: Sheet },
@@ -67,7 +67,7 @@ export function DataConnectors() {
             <CardContent className="p-8 pt-0">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {staticConnectors.map(connector => (
-                        <Button key={connector.name} variant="outline" className="w-full h-28 flex-col gap-2 p-4 text-center transition-all hover:bg-accent/50 hover:scale-105">
+                        <Button key={connector.name} variant="outline" className="w-full h-28 flex-col gap-2 p-4 text-center transition-all hover:bg-accent/50 hover:scale-105" disabled>
                             <connector.icon className="w-8 h-8 text-muted-foreground" />
                             <span className="font-medium">{connector.name}</span>
                         </Button>

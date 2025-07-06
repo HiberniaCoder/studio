@@ -4,12 +4,15 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import Image from 'next/image';
+import Link from 'next/link';
+import { DatabaseZap } from "lucide-react";
 
 export default function SettingsPage() {
   return (
@@ -52,6 +55,28 @@ export default function SettingsPage() {
               </div>
             </form>
           </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Data Connections</CardTitle>
+            <CardDescription>Manage your third-party integrations to sync business data.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0">
+                  <DatabaseZap className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Connect your business tools like Wix, Shopify, or Google Analytics to automatically populate your dashboard with real-time data and insights.
+              </p>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild>
+                <Link href="/settings/connections">Manage Connections</Link>
+            </Button>
+          </CardFooter>
         </Card>
 
         <Card>
