@@ -18,8 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
-import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { supabase } from "@/lib/supabase";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -43,22 +42,21 @@ export default function LoginForm() {
 
     async function onSubmit(values: FormValues) {
         setLoading(true);
-        try {
-            await signInWithEmailAndPassword(auth, values.email, values.password);
-            router.push("/dashboard");
-        } catch (error: any) {
-            let description = "An unexpected error occurred. Please try again.";
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                description = "Invalid email or password. Please try again.";
-            }
+        const { error } = await supabase.auth.signInWithPassword({
+            email: values.email,
+            password: values.password,
+        });
+
+        if (error) {
             toast({
                 variant: "destructive",
                 title: "Login Failed",
-                description,
+                description: error.message,
             });
-        } finally {
-            setLoading(false);
+        } else {
+            router.push("/dashboard");
         }
+        setLoading(false);
     }
 
     return (

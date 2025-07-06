@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Briefcase,
   BrainCircuit,
@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/icons";
+import { supabase } from "@/lib/supabase";
+import { Button } from "./ui/button";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -30,6 +32,12 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -63,13 +71,15 @@ export function Sidebar() {
         <div className="mt-auto flex flex-col items-center gap-4 p-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link
-                href="/"
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
                 className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
               >
                 <LogOut className="h-5 w-5" />
                 <span className="sr-only">Logout</span>
-              </Link>
+              </Button>
             </TooltipTrigger>
             <TooltipContent side="right">Logout</TooltipContent>
           </Tooltip>

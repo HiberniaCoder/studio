@@ -17,8 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { auth } from "@/lib/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { supabase } from "@/lib/supabase";
 
 const formSchema = z
   .object({
@@ -51,28 +50,31 @@ export default function RegisterForm() {
 
   async function onSubmit(values: FormValues) {
     setLoading(true);
-    try {
-      await createUserWithEmailAndPassword(auth, values.email, values.password);
-      
-      toast({
-        title: "Registration Successful",
-        description: "You've been redirected to the dashboard.",
-      });
-      router.push("/dashboard");
-
-    } catch (error: any) {
-        let description = "An unexpected error occurred. Please try again.";
-        if (error.code === 'auth/email-already-in-use') {
-            description = "This email is already in use. Please use a different email.";
+    const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+            data: {
+                full_name: values.fullName,
+            }
         }
+    });
+
+    if (error) {
         toast({
             variant: "destructive",
             title: "Registration Failed",
-            description,
+            description: error.message,
         });
-    } finally {
-        setLoading(false);
+    } else {
+        toast({
+            title: "Registration Successful",
+            description: "Please check your email to verify your account.",
+        });
+        router.push("/");
     }
+
+    setLoading(false);
   }
 
   return (
