@@ -41,7 +41,7 @@ export function Sidebar() {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <aside className="hidden h-screen w-20 flex-col items-center border-r bg-background/80 backdrop-blur-sm sm:flex">
+      <aside className="hidden h-screen w-20 flex-col items-center border-r bg-background/80 backdrop-blur-sm sm:flex z-10">
         <div className="flex h-20 items-center justify-center border-b">
           <Link href="/dashboard" className="h-10 w-10 text-primary">
             <Icons.logo />

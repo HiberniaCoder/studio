@@ -77,9 +77,9 @@ export default function RegisterForm() {
     } else {
         toast({
             title: "Registration Successful",
-            description: "Please check your email to verify your account.",
+            description: "Please check your email to verify your account before logging in. Redirecting you to onboarding...",
         });
-        router.push("/");
+        router.push("/onboarding");
     }
 
     setLoading(false);
