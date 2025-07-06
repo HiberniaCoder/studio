@@ -67,8 +67,9 @@ export async function GET(request: NextRequest) {
       throw upsertError;
     }
 
-    connectionsUrl.searchParams.set('wix_connected', 'true');
-    return NextResponse.redirect(connectionsUrl);
+    // 4. Redirect to the configuration page instead of the connections page
+    const configureUrl = new URL('/settings/connections/wix/configure', request.url);
+    return NextResponse.redirect(configureUrl);
 
   } catch (error) {
     console.error('Wix OAuth callback error:', error);

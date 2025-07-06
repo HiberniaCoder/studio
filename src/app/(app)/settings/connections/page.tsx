@@ -67,18 +67,10 @@ export default function ConnectionsPage() {
     }, [fetchStatuses]);
 
     useEffect(() => {
-        const wixConnected = searchParams.get('wix_connected');
         const error = searchParams.get('error');
         const errorDescription = searchParams.get('error_description');
 
-        if (wixConnected) {
-            toast({
-                title: 'Wix Connected',
-                description: 'Your Wix account has been successfully linked.',
-                variant: 'default',
-            });
-            router.replace('/settings/connections');
-        } else if (error) {
+        if (error) {
             toast({
                 title: `Error: ${error}`,
                 description: errorDescription || 'An unknown error occurred.',
