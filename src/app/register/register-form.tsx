@@ -61,11 +61,19 @@ export default function RegisterForm() {
     });
 
     if (error) {
-        toast({
-            variant: "destructive",
-            title: "Registration Failed",
-            description: error.message,
-        });
+        if (error.message === "User already registered") {
+            toast({
+                variant: "destructive",
+                title: "Email already in use",
+                description: "This email address is already registered. Please try logging in.",
+            });
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Registration Failed",
+                description: error.message,
+            });
+        }
     } else {
         toast({
             title: "Registration Successful",
