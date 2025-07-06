@@ -29,7 +29,7 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="business-name">Business Name</Label>
-                  <Input id="business-name" defaultValue="Innovate Inc." />
+                  <Input id="business-name" defaultValue="Core Theorem BI" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact-person">Contact Person</Label>
@@ -39,7 +39,7 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" defaultValue="contact@innovate.com" />
+                  <Input id="email" type="email" defaultValue="contact@coretheorem.bi" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
@@ -48,7 +48,7 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" defaultValue="123 Innovation Drive, Tech City, 12345" />
+                <Input id="address" defaultValue="123 Theorem Drive, Insight City, 12345" />
               </div>
               <div className="flex justify-end pt-4">
                 <Button type="submit">Save Changes</Button>

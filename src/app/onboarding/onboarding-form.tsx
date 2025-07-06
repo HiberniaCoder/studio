@@ -67,7 +67,7 @@ export default function OnboardingForm() {
             <FormItem>
               <FormLabel>Business Name</FormLabel>
               <FormControl>
-                <Input placeholder="Innovate Inc." {...field} />
+                <Input placeholder="Core Theorem BI" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

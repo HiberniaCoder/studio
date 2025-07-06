@@ -13,7 +13,7 @@ export default function LoginPage() {
             <div className="mx-auto mb-4 h-14 w-14 text-primary">
               <Icons.logo />
             </div>
-            <CardTitle className="text-2xl text-center">ClientView</CardTitle>
+            <CardTitle className="text-2xl text-center">Core Theorem BI</CardTitle>
             <CardDescription className="text-center">
               Enter your credentials to access your dashboard.
             </CardDescription>
