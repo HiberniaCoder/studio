@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DatabaseZap, Sheet, Briefcase, BarChart, ShoppingCart, Code, Loader2 } from 'lucide-react';
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { getWixAuthUrl } from "../settings/connections/actions";
+import { getWixAuthUrl } from "@/app/(app)/settings/connections/actions";
 
 const staticConnectors = [
     { name: 'Google Sheets', icon: Sheet },
