@@ -2,12 +2,15 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Icons } from "@/components/icons";
 import OnboardingForm from "./onboarding-form";
 import { getBusinessTypes, getIndustries } from "./actions";
+import OnboardingActions from "./onboarding-actions";
+import { Separator } from "@/components/ui/separator";
 
 export default async function OnboardingPage() {
   const [industries, businessTypes] = await Promise.all([
@@ -32,6 +35,10 @@ export default async function OnboardingPage() {
           <CardContent>
             <OnboardingForm industries={industries} businessTypes={businessTypes} />
           </CardContent>
+          <CardFooter className="flex-col gap-4 px-6 pb-6 pt-0">
+            <Separator />
+            <OnboardingActions />
+          </CardFooter>
         </Card>
       </div>
     </div>

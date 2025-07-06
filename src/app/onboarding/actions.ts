@@ -3,6 +3,38 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
+
+/**
+ * Deletes a user account from Supabase auth and all associated data.
+ * This requires the SUPABASE_SERVICE_ROLE_KEY to be set in environment variables.
+ * @returns An object with an error message if something goes wrong.
+ */
+export async function deleteUserAccount(): Promise<{ error?: string } | void> {
+  const supabase = createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'You must be logged in to delete your account.' };
+  }
+
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(user.id);
+
+  if (error) {
+    console.error('Error deleting user:', error);
+    return { error: 'There was a problem deleting your account.' };
+  }
+  
+  redirect('/register');
+}
 
 /*
 * In your Supabase project, you'll need to create the following tables:
