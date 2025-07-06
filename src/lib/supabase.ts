@@ -1,5 +1,5 @@
 
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -9,7 +9,7 @@ let client = null;
 // Check for non-empty strings before attempting to create the client.
 if (supabaseUrl && supabaseUrl.length > 0 && supabaseAnonKey && supabaseAnonKey.length > 0) {
     try {
-        client = createClient(supabaseUrl, supabaseAnonKey);
+        client = createBrowserClient(supabaseUrl, supabaseAnonKey);
     } catch (e) {
         console.error("Error creating Supabase client: Invalid URL or Key. Please check your .env file.", e);
         client = null;
