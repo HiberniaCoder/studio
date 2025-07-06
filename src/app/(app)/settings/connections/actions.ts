@@ -1,7 +1,7 @@
 
 'use server';
 
-import { supabase } from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -52,9 +52,7 @@ export async function getWixAuthUrl(): Promise<{ authUrl?: string; error?: strin
  * Fetches the connection status for all third-party services.
  */
 export async function getConnectionStatuses(): Promise<{ [key: string]: { connected: boolean } }> {
-    if (!supabase) {
-        throw new Error("Database connection is not configured.");
-    }
+    const supabase = createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -85,9 +83,7 @@ export async function getConnectionStatuses(): Promise<{ [key: string]: { connec
  * Disconnects the user's Wix account by deleting their tokens.
  */
 export async function disconnectWix(): Promise<{ success?: boolean, error?: string }> {
-    if (!supabase) {
-        return { error: "Database connection is not configured." };
-    }
+    const supabase = createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { error: "User not authenticated." };

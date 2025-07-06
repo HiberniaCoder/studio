@@ -1,8 +1,8 @@
 'use server';
 
 import { z } from 'zod';
-import { supabase } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 /*
 * In your Supabase project, you'll need to create the following tables:
@@ -14,6 +14,7 @@ import { redirect } from 'next/navigation';
 *   business_type text,
 *   website text,
 *   industry text,
+*   onboarding_step integer DEFAULT 1,
 *   created_at timestamp with time zone DEFAULT now() NOT NULL
 * );
 *
@@ -34,6 +35,7 @@ import { redirect } from 'next/navigation';
 * -- Policies for clients table
 * CREATE POLICY "Enable read access for own user" ON public.clients FOR SELECT USING (auth.uid() = user_id);
 * CREATE POLICY "Enable insert for authenticated users" ON public.clients FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+* CREATE POLICY "Enable update for own user" ON public.clients FOR UPDATE USING (auth.uid() = user_id);
 *
 * -- Policies for industries table
 * CREATE POLICY "Enable read access for all users" ON public.industries FOR SELECT USING (true);
@@ -58,9 +60,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export async function saveBusinessDetails(values: FormValues) {
-  if (!supabase) {
-    return { error: 'Database connection is not configured. Please check server environment variables.' };
-  }
+  const supabase = createSupabaseServerClient();
 
   const { data: { user }, error: userError } = await supabase.auth.getUser();
 
@@ -68,19 +68,20 @@ export async function saveBusinessDetails(values: FormValues) {
     return { error: 'You must be logged in to complete onboarding.' };
   }
 
-  const { error } = await supabase.from('clients').insert({
-    user_id: user.id,
-    business_name: values.businessName,
-    business_type: values.businessType,
-    website: values.website,
-    industry: values.industry,
-  });
+  const { error } = await supabase
+    .from('clients')
+    .update({
+      business_name: values.businessName,
+      business_type: values.businessType,
+      website: values.website,
+      industry: values.industry,
+      onboarding_step: 0,
+    })
+    .eq('user_id', user.id);
+
 
   if (error) {
-    console.error('Supabase insert error:', error);
-    if (error.code === '23505') { // Unique constraint violation
-        return { error: 'These business details have already been saved.' };
-    }
+    console.error('Supabase update error:', error);
     return { error: 'Failed to save your business details. Please try again.' };
   }
 
@@ -92,7 +93,7 @@ export type SelectOption = {
 };
 
 export async function getIndustries(): Promise<SelectOption[]> {
-    if (!supabase) return [];
+  const supabase = createSupabaseServerClient();
     const { data, error } = await supabase.from('industries').select('name').order('name');
     if (error) {
         console.error('Error fetching industries:', error);
@@ -102,7 +103,7 @@ export async function getIndustries(): Promise<SelectOption[]> {
 }
 
 export async function getBusinessTypes(): Promise<SelectOption[]> {
-    if (!supabase) return [];
+    const supabase = createSupabaseServerClient();
     const { data, error } = await supabase.from('business_types').select('name').order('name');
     if (error) {
         console.error('Error fetching business types:', error);

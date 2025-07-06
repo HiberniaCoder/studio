@@ -1,6 +1,6 @@
 'use server';
 
-import { supabase } from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type WixAnalyticsData = {
     metric_type: string;
@@ -9,7 +9,7 @@ export type WixAnalyticsData = {
 }[];
 
 export async function getWixAnalyticsData(): Promise<WixAnalyticsData | null> {
-    if (!supabase) return null;
+    const supabase = createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
@@ -28,7 +28,7 @@ export async function getWixAnalyticsData(): Promise<WixAnalyticsData | null> {
 }
 
 export async function checkWixConnection() {
-    if (!supabase) return { connected: false, configured: false };
+    const supabase = createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { connected: false, configured: false };
 

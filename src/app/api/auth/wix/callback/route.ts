@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
-import { supabase } from '@/lib/supabase';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 /**
  * This is the callback route for Wix OAuth.
@@ -44,9 +44,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 2. Get the authenticated user from Supabase.
-    if (!supabase) {
-        throw new Error('Supabase client is not available.');
-    }
+    const supabase = createSupabaseServerClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
       throw new Error('User not authenticated.');

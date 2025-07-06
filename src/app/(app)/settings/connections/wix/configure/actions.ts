@@ -1,6 +1,6 @@
 'use server';
 
-import { supabase } from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { redirect } from 'next/navigation';
 import { revalidatePath } from "next/cache";
@@ -83,9 +83,7 @@ async function fetchWixData(accessToken: string, dataType: string, timeframe: st
 }
 
 export async function startWixImport(values: FormValues) {
-    if (!supabase) {
-        return { error: 'Database connection is not configured.' };
-    }
+    const supabase = createSupabaseServerClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
         return { error: 'You must be logged in.' };
