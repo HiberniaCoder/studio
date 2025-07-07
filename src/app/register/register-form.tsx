@@ -53,84 +53,85 @@ export default function RegisterForm() {
     setLoading(true);
 
     if (!supabase) {
-        toast({
-            variant: "destructive",
-            title: "Configuration Error",
-            description: "This application is not configured for authentication. Please check the setup.",
-        });
-        setLoading(false);
-        return;
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description:
+          "This application is not configured for authentication. Please check the setup.",
+      });
+      setLoading(false);
+      return;
     }
 
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    // 1. Create the user in Supabase auth
+    const { data: signUpData, error: signUpError } =
+      await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
-            data: {
-                full_name: values.fullName,
-            }
-        }
-    });
+          data: {
+            full_name: values.fullName,
+          },
+        },
+      });
 
     if (signUpError) {
-        toast({
-            variant: "destructive",
-            title: "Registration Failed",
-            description: signUpError.message,
-        });
-        setLoading(false);
-        return;
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: signUpError.message,
+      });
+      setLoading(false);
+      return;
     }
 
     if (!signUpData.user) {
-        toast({
-            variant: "destructive",
-            title: "Registration Failed",
-            description: "Could not create user. Please try again.",
-        });
-        setLoading(false);
-        return;
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: "Could not create user. Please try again.",
+      });
+      setLoading(false);
+      return;
     }
 
-    // A user was created. Now, create a corresponding entry in the 'clients' table.
+    // 2. Sign in the user to establish a session.
+    // This is crucial for the RLS policy on the `clients` table insert.
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
+    });
+    
+    // If sign-in fails, it's likely because email confirmation is required.
+    if (signInError) {
+      toast({
+        title: "Registration Successful",
+        description: "Please check your email to verify your account.",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // 3. With an active session, create the corresponding entry in the 'clients' table.
     const { error: clientError } = await supabase
-        .from('clients')
-        .insert({ 
-            user_id: signUpData.user.id, 
-            onboarding_step: 1 
-        });
-
-    if (clientError) {
-        toast({
-            variant: "destructive",
-            title: "Registration Partially Failed",
-            description: "Your account was created, but we failed to set up your profile. Please contact support.",
-        });
-        setLoading(false);
-        return;
-    }
-
-    // Profile created. Now, explicitly log the user in.
-    if (signUpData.user) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
+      .from("clients")
+      .insert({
+        user_id: signUpData.user.id,
+        onboarding_step: 1,
       });
 
-      if (signInError) {
-        // This case handles when email confirmation is on.
-        toast({
-          title: "Registration Successful",
-          description: "Please check your email to verify your account.",
-        });
-        setLoading(false);
-        return;
-      }
-      
-      // If sign-in is successful, redirect.
-      router.push("/onboarding");
+    if (clientError) {
+      toast({
+        variant: "destructive",
+        title: "Registration Partially Failed",
+        description: `Your account was created, but we failed to set up your profile. Please contact support. Error: ${clientError.message}`,
+      });
+      setLoading(false);
+      return;
     }
-
+    
+    // 4. Redirect to the onboarding flow.
+    router.push("/onboarding");
     setLoading(false);
   }
 
