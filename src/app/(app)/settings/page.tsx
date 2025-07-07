@@ -13,8 +13,17 @@ import { Separator } from "@/components/ui/separator";
 import Image from 'next/image';
 import Link from 'next/link';
 import { DatabaseZap } from "lucide-react";
+import { getBusinessProfile } from "./actions";
+import { getBusinessTypes, getIndustries } from "@/app/onboarding/actions";
+import { BusinessProfileForm } from "./business-profile-form";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const [profile, industries, businessTypes] = await Promise.all([
+    getBusinessProfile(),
+    getIndustries(),
+    getBusinessTypes(),
+  ]);
+
   return (
     <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
@@ -25,35 +34,7 @@ export default function SettingsPage() {
             <CardDescription>Update your company's information.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="business-name">Business Name</Label>
-                  <Input id="business-name" defaultValue="Core Theorem BI" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contact-person">Contact Person</Label>
-                  <Input id="contact-person" defaultValue="Jane Doe" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" defaultValue="contact@coretheorem.bi" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" type="tel" defaultValue="+1 (555) 123-4567" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" defaultValue="123 Theorem Drive, Insight City, 12345" />
-              </div>
-              <div className="flex justify-end pt-4">
-                <Button type="submit">Save Changes</Button>
-              </div>
-            </form>
+            <BusinessProfileForm profile={profile} industries={industries} businessTypes={businessTypes} />
           </CardContent>
         </Card>
 
