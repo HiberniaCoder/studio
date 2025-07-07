@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -61,7 +62,7 @@ export default function RegisterForm() {
         return;
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
@@ -71,26 +72,58 @@ export default function RegisterForm() {
         }
     });
 
-    if (error) {
-        if (error.message === "User already registered") {
-            toast({
-                variant: "destructive",
-                title: "Email already in use",
-                description: "This email address is already registered. Please try logging in.",
-            });
-        } else {
-            toast({
-                variant: "destructive",
-                title: "Registration Failed",
-                description: error.message,
-            });
-        }
-    } else {
+    if (signUpError) {
+        toast({
+            variant: "destructive",
+            title: "Registration Failed",
+            description: signUpError.message,
+        });
+        setLoading(false);
+        return;
+    }
+
+    if (!signUpData.user) {
+        toast({
+            variant: "destructive",
+            title: "Registration Failed",
+            description: "Could not create user. Please try again.",
+        });
+        setLoading(false);
+        return;
+    }
+
+    // A user was created. Now, create a corresponding entry in the 'clients' table.
+    const { error: clientError } = await supabase
+        .from('clients')
+        .insert({ 
+            user_id: signUpData.user.id, 
+            onboarding_step: 1 
+        });
+
+    if (clientError) {
+        toast({
+            variant: "destructive",
+            title: "Registration Partially Failed",
+            description: "Your account was created, but we failed to set up your profile. Please contact support.",
+        });
+        setLoading(false);
+        return;
+    }
+
+    // Profile created successfully. Now check if the user has a session.
+    if (signUpData.session) {
+        // User is logged in (likely email confirmation is disabled).
         toast({
             title: "Registration Successful",
-            description: "Please check your email to verify your account before logging in. Redirecting you to onboarding...",
+            description: "Redirecting you to onboarding...",
         });
         router.push("/onboarding");
+    } else {
+        // User needs to confirm their email.
+        toast({
+            title: "Registration Successful",
+            description: "Please check your email to verify your account.",
+        });
     }
 
     setLoading(false);
@@ -159,3 +192,4 @@ export default function RegisterForm() {
     </Form>
   );
 }
+
