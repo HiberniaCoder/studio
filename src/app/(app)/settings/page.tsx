@@ -21,6 +21,7 @@ import { getBusinessProfile, type BusinessProfile } from "./actions";
 import { getBusinessTypes, getIndustries, type SelectOption } from "@/app/onboarding/actions";
 import { BusinessProfileForm } from "./business-profile-form";
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/AuthContext';
 
 function SettingsSkeleton() {
   return (
@@ -56,13 +57,22 @@ function SettingsSkeleton() {
 }
 
 export default function SettingsPage() {
+  const { loading: authLoading, user } = useAuth();
   const [profile, setProfile] = useState<BusinessProfile | null>(null);
   const [industries, setIndustries] = useState<SelectOption[]>([]);
   const [businessTypes, setBusinessTypes] = useState<SelectOption[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading || !user) {
+      if (!authLoading) {
+        setDataLoading(false);
+      }
+      return;
+    }
+
     async function loadData() {
+      setDataLoading(true);
       try {
         const [profileData, industriesData, businessTypesData] = await Promise.all([
           getBusinessProfile(),
@@ -74,14 +84,17 @@ export default function SettingsPage() {
         setBusinessTypes(businessTypesData);
       } catch (error) {
         console.error("Failed to load settings data", error);
+        setProfile(null);
       } finally {
-        setLoading(false);
+        setDataLoading(false);
       }
     }
     loadData();
-  }, []);
+  }, [authLoading, user]);
 
-  if (loading) {
+  const isLoading = authLoading || dataLoading;
+
+  if (isLoading) {
     return (
       <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
@@ -166,3 +179,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+    
