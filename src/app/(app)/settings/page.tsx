@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -13,17 +17,88 @@ import { Separator } from "@/components/ui/separator";
 import Image from 'next/image';
 import Link from 'next/link';
 import { DatabaseZap } from "lucide-react";
-import { getBusinessProfile } from "./actions";
-import { getBusinessTypes, getIndustries } from "@/app/onboarding/actions";
+import { getBusinessProfile, type BusinessProfile } from "./actions";
+import { getBusinessTypes, getIndustries, type SelectOption } from "@/app/onboarding/actions";
 import { BusinessProfileForm } from "./business-profile-form";
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default async function SettingsPage() {
-  const [profile, industries, businessTypes] = await Promise.all([
-    getBusinessProfile(),
-    getIndustries(),
-    getBusinessTypes(),
-  ]);
+function SettingsSkeleton() {
+  return (
+    <div className="grid gap-6">
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-4 w-64 mt-2" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+           <div className="flex justify-end pt-4">
+              <Skeleton className="h-10 w-32" />
+            </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-4 w-64 mt-2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-10 w-full" />
+        </CardContent>
+        <CardFooter>
+          <Skeleton className="h-10 w-40" />
+        </CardFooter>
+      </Card>
+    </div>
+  )
+}
 
+export default function SettingsPage() {
+  const [profile, setProfile] = useState<BusinessProfile | null>(null);
+  const [industries, setIndustries] = useState<SelectOption[]>([]);
+  const [businessTypes, setBusinessTypes] = useState<SelectOption[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [profileData, industriesData, businessTypesData] = await Promise.all([
+          getBusinessProfile(),
+          getIndustries(),
+          getBusinessTypes(),
+        ]);
+        setProfile(profileData);
+        setIndustries(industriesData);
+        setBusinessTypes(businessTypesData);
+      } catch (error) {
+        console.error("Failed to load settings data", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <SettingsSkeleton />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <p>Could not load business profile. Please try again later.</p>
+      </div>
+    );
+  }
+  
   return (
     <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
