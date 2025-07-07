@@ -110,20 +110,25 @@ export default function RegisterForm() {
         return;
     }
 
-    // Profile created successfully. Now check if the user has a session.
-    if (signUpData.session) {
-        // User is logged in (likely email confirmation is disabled).
+    // Profile created. Now, explicitly log the user in.
+    if (signUpData.user) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (signInError) {
+        // This case handles when email confirmation is on.
         toast({
-            title: "Registration Successful",
-            description: "Redirecting you to onboarding...",
+          title: "Registration Successful",
+          description: "Please check your email to verify your account.",
         });
-        router.push("/onboarding");
-    } else {
-        // User needs to confirm their email.
-        toast({
-            title: "Registration Successful",
-            description: "Please check your email to verify your account.",
-        });
+        setLoading(false);
+        return;
+      }
+      
+      // If sign-in is successful, redirect.
+      router.push("/onboarding");
     }
 
     setLoading(false);
@@ -192,4 +197,3 @@ export default function RegisterForm() {
     </Form>
   );
 }
-
