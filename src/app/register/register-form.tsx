@@ -130,7 +130,8 @@ export default function RegisterForm() {
       return;
     }
     
-    // 4. Redirect to the onboarding flow.
+    // 4. Refresh server-side session and redirect to the onboarding flow.
+    router.refresh();
     router.push("/onboarding");
     setLoading(false);
   }
