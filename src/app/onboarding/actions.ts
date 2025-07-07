@@ -1,6 +1,5 @@
 'use server';
 
-import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
@@ -82,43 +81,6 @@ export async function deleteUserAccount(): Promise<{ error?: string } | void> {
 *
 */
 
-const formSchema = z.object({
-  businessName: z.string().min(2, "Business name must be at least 2 characters."),
-  industry: z.string().min(1, "Please select an industry."),
-  businessType: z.string().min(1, "Please select a business type."),
-  website: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
-export async function saveBusinessDetails(values: FormValues) {
-  const supabase = createSupabaseServerClient();
-
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return { error: 'You must be logged in to complete onboarding.' };
-  }
-
-  const { error } = await supabase
-    .from('clients')
-    .update({
-      business_name: values.businessName,
-      business_type: values.businessType,
-      website: values.website,
-      industry: values.industry,
-      onboarding_step: 0,
-    })
-    .eq('user_id', user.id);
-
-
-  if (error) {
-    console.error('Supabase update error:', error);
-    return { error: 'Failed to save your business details. Please try again.' };
-  }
-
-  redirect('/dashboard');
-}
 
 export type SelectOption = {
     name: string;

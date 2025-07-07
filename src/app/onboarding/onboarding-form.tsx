@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -23,7 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { saveBusinessDetails, type SelectOption } from "./actions";
+import { type SelectOption } from "./actions";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   businessName: z.string().min(2, "Business name must be at least 2 characters."),
@@ -40,8 +42,10 @@ type OnboardingFormProps = {
 };
 
 export default function OnboardingForm({ industries, businessTypes }: OnboardingFormProps) {
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
+  const { supabase, user, loading: authLoading } = useAuth();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -54,18 +58,44 @@ export default function OnboardingForm({ industries, businessTypes }: Onboarding
   });
 
   async function onSubmit(values: FormValues) {
-    setLoading(true);
-    const result = await saveBusinessDetails(values);
+    setIsSubmitting(true);
 
-    if (result?.error) {
-        toast({
-            variant: "destructive",
-            title: "Something went wrong",
-            description: result.error,
-        });
-        setLoading(false);
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: "You must be logged in to complete onboarding.",
+      });
+      setIsSubmitting(false);
+      return;
     }
-    // On success, the action redirects, so no need to handle success case here.
+
+    const { error } = await supabase
+      .from('clients')
+      .update({
+        business_name: values.businessName,
+        business_type: values.businessType,
+        website: values.website,
+        industry: values.industry,
+        onboarding_step: 0,
+      })
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Failed to save details",
+        description: error.message,
+      });
+    } else {
+      toast({
+        title: "Profile updated!",
+        description: "Redirecting you to the dashboard.",
+      });
+      router.push("/dashboard");
+    }
+    
+    setIsSubmitting(false);
   }
 
   return (
@@ -146,8 +176,8 @@ export default function OnboardingForm({ industries, businessTypes }: Onboarding
           )}
         />
 
-        <Button type="submit" className="w-full mt-2" disabled={loading}>
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button type="submit" className="w-full mt-2" disabled={isSubmitting || authLoading}>
+          {(isSubmitting || authLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Continue to Dashboard
         </Button>
       </form>

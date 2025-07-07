@@ -14,15 +14,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { supabase } from "@/lib/supabase";
 import { deleteUserAccount } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogOut, Trash2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function OnboardingActions() {
   const router = useRouter();
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
+  const { supabase } = useAuth();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

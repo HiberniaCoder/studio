@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -31,6 +31,7 @@ export default function LoginForm() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
+    const { supabase } = useAuth();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -43,31 +44,51 @@ export default function LoginForm() {
     async function onSubmit(values: FormValues) {
         setLoading(true);
 
-        if (!supabase) {
-            toast({
-                variant: "destructive",
-                title: "Configuration Error",
-                description: "This application is not configured for authentication. Please check the setup.",
-            });
-            setLoading(false);
-            return;
-        }
-
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
             email: values.email,
             password: values.password,
         });
 
-        if (error) {
+        if (signInError) {
             toast({
                 variant: "destructive",
                 title: "Login Failed",
-                description: error.message,
+                description: signInError.message,
             });
+            setLoading(false);
+            return;
+        }
+        
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+            const { data: client, error: clientError } = await supabase
+                .from("clients")
+                .select("onboarding_step")
+                .eq("user_id", user.id)
+                .single();
+            
+            if (clientError && clientError.code !== 'PGRST116') { // Ignore error when row not found
+                toast({
+                    variant: "destructive",
+                    title: "Error fetching profile",
+                    description: clientError.message,
+                });
+                setLoading(false);
+                return;
+            }
+
+            if (client && client.onboarding_step === 1) {
+                router.push("/onboarding");
+            } else {
+                 router.push("/dashboard");
+            }
         } else {
+             // Fallback if user is somehow null after successful login
             router.push("/dashboard");
         }
-        setLoading(false);
+        
+        // No need to set loading to false, router push will unmount
     }
 
     return (

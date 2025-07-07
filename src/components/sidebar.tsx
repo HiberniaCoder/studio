@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/icons";
-import { supabase } from "@/lib/supabase";
 import { Button } from "./ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -33,6 +33,7 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { supabase } = useAuth();
 
   const handleLogout = async () => {
     if (supabase) {

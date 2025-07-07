@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
+import AuthProvider from "@/contexts/AuthContext";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -27,7 +28,9 @@ export default function RootLayout({
         />
       </head>
       <body className={cn("font-sans antialiased", inter.variable)} suppressHydrationWarning>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

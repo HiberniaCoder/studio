@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -18,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z
   .object({
@@ -38,6 +37,7 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { supabase } = useAuth();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -51,17 +51,6 @@ export default function RegisterForm() {
 
   async function onSubmit(values: FormValues) {
     setLoading(true);
-
-    if (!supabase) {
-      toast({
-        variant: "destructive",
-        title: "Configuration Error",
-        description:
-          "This application is not configured for authentication. Please check the setup.",
-      });
-      setLoading(false);
-      return;
-    }
 
     // 1. Create the user in Supabase auth
     const { data: signUpData, error: signUpError } =
@@ -96,7 +85,6 @@ export default function RegisterForm() {
     }
 
     // 2. Sign in the user to establish a session.
-    // This is crucial for the RLS policy on the `clients` table insert.
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
